@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "jest"
+    "test": "jest",
+    "encode-csv": "node ./src/csvEncoder.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.24.4",
@@ -20,5 +21,10 @@
     "transform": {
       "^.+\\.js$": "babel-jest"
     }
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "fs": "^0.0.1-security"
   }
 }
