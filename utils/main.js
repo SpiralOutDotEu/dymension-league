@@ -1,24 +1,35 @@
 import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
+import { encodeAttributes, decodeAttributes } from './src/encoder.js'
 
 document.querySelector('#app').innerHTML = `
+  <h1>Attribute Encoder/Decoder</h1>
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
+    <input type="number" id="capacity" placeholder="Capacity (2-17)" />
+    <input type="number" id="attack" placeholder="Attack (2-17)" />
+    <input type="number" id="speed" placeholder="Speed (2-17)" />
+    <input type="number" id="shield" placeholder="Shield (2-17)" />
+    <button onclick="encode()">Encode</button>
   </div>
-`
+  <div>
+    <input type="number" id="encoded" placeholder="Enter encoded number" />
+    <button onclick="decode()">Decode</button>
+  </div>
+  <p id="encodedResult"></p>
+  <p id="decodedResult"></p>
+`;
 
-setupCounter(document.querySelector('#counter'))
+window.encode = function() {
+  const capacity = document.getElementById('capacity').value;
+  const attack = document.getElementById('attack').value;
+  const speed = document.getElementById('speed').value;
+  const shield = document.getElementById('shield').value;
+  const encoded = encodeAttributes(+capacity, +attack, +speed, +shield);
+  document.getElementById('encodedResult').textContent = `Encoded Value: ${encoded}`;
+  document.getElementById('encoded').value = encoded;
+}
+
+window.decode = function() {
+  const encoded = document.getElementById('encoded').value;
+  const decoded = decodeAttributes(+encoded);
+  document.getElementById('decodedResult').textContent = `Decoded - Capacity: ${decoded.capacity}, Attack: ${decoded.attack}, Speed: ${decoded.speed}, Shield: ${decoded.shield}`;
+}
