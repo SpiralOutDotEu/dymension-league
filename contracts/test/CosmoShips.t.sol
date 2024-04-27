@@ -21,7 +21,7 @@ contract CosmoShipsTest is Test {
         nft = new CosmoShips(initialMerkleRoot, initialMintPrice, deployer, address(verifier));
     }
 
-    function testInitialization() public {
+    function testInitialization() public view {
         assertEq(nft.merkleRoot(), initialMerkleRoot, "Incorrect merkle root set");
         assertEq(nft.mintPrice(), 1 ether, "Incorrect mint price set");
         assertTrue(nft.hasRole(nft.DEFAULT_ADMIN_ROLE(), deployer), "Admin role not assigned correctly");

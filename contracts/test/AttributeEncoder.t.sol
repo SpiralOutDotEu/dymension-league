@@ -11,7 +11,7 @@ contract AttributeEncoderTest is Test {
         encoder = new AttributeEncoder();
     }
 
-    function testEncodeDecodeAttributes() public {
+    function testEncodeDecodeAttributes() public view {
         uint capacity = 2;
         uint attack = 4;
         uint speed = 6;

@@ -10,8 +10,8 @@ contract AttributeVerifierTest is Test {
     function setUp() public {
         verifier = new AttributeVerifier();
     }
-
-    function testVerify() public {
+    
+    function testVerify() public view {
         // Pre generated sample values
         bytes32 root = bytes32(0xd67e5a7bb77ee4c5e38947df0fd5fd577eb7bd77d03d8e86b4b6adf3c0ad4bc2); // Sample root
         uint256 tokenId = 0; // Sample tokenId
