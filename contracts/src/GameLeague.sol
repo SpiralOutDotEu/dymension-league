@@ -12,10 +12,21 @@ contract GameLeague is ERC721Holder {
     Counters.Counter private gameIdCounter;
     Counters.Counter private teamsCounter;
 
+    enum LeagueState {
+        Idle,
+        Initiated,
+        EnrollmentClosed,
+        BetsOpen,
+        Running,
+        Distribution,
+        Concluded
+    }
+
     struct League {
         uint256 id;
-        bool isActive;
+        LeagueState state;
         uint256 prizePool;
+        uint256[] enrolledTeams;
         mapping(uint256 => Game) games;
     }
 
@@ -38,6 +49,7 @@ contract GameLeague is ERC721Holder {
         Battle
     }
 
+    uint256 public currentLeagueId;
     mapping(uint256 => League) public leagues;
     mapping(uint256 => Team) public teams;
     mapping(address => uint256) public stakes;
@@ -64,5 +76,27 @@ contract GameLeague is ERC721Holder {
     function getTeam(uint256 teamId) public view returns (string memory, uint256[] memory, address) {
         Team storage team = teams[teamId];
         return (team.name, team.nftIds, team.owner);
+    }
+
+    function initializeLeague() external payable {
+        require(
+            leagues[currentLeagueId].state == LeagueState.Concluded || currentLeagueId == 0,
+            "Previous league not concluded"
+        );
+
+        currentLeagueId++;
+        League storage newLeague = leagues[currentLeagueId];
+        newLeague.id = currentLeagueId;
+        newLeague.state = LeagueState.Initiated;
+        newLeague.prizePool = msg.value;
+    }
+
+    function getLeague(uint256 leagueId)
+        external
+        view
+        returns (uint256 id, LeagueState state, uint256 prizePool, uint256[] memory enrolledTeams)
+    {
+        League storage league = leagues[leagueId];
+        return (league.id, league.state, league.prizePool, league.enrolledTeams);
     }
 }

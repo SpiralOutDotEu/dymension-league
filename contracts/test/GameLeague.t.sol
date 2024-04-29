@@ -74,4 +74,20 @@ contract GameLeagueTest is Test {
         assertEq(retrievedNftIds[1], 2, "NFT ID at index 1 should be 2");
         assertEq(retrievedNftIds[2], 3, "NFT ID at index 2 should be 3");
     }
+
+    function testInitializeLeague(uint256 _prizePool) public {
+        _prizePool = bound(_prizePool, 10 ^ 18, 10 ^ 23);
+        vm.deal(deployer, _prizePool + 10 * 10 ^ 18);
+
+        // Initially, we should be able to start a league
+        vm.prank(deployer);
+        gameLeague.initializeLeague{value: _prizePool}();
+        (, GameLeague.LeagueState state,,) = gameLeague.getLeague(1);
+        assertEq(uint256(state), uint256(GameLeague.LeagueState.Initiated));
+
+        // Expect revert on trying to initialize another league when one is active
+        vm.expectRevert("Previous league not concluded");
+        gameLeague.initializeLeague{value: _prizePool}();
+        vm.stopPrank();
+    }
 }
