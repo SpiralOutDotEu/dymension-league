@@ -27,6 +27,7 @@ contract GameLeague is ERC721Holder {
         LeagueState state;
         uint256 prizePool;
         uint256[] enrolledTeams;
+        mapping(uint256 => bool) teamsMap;
         mapping(uint256 => Game) games;
     }
 
@@ -60,9 +61,10 @@ contract GameLeague is ERC721Holder {
         cosmoShips = CosmoShips(_nftAddress);
     }
 
-    function createTeam(uint256[] calldata nftIds, string calldata teamName) external {
+    function createTeam(uint256[] calldata nftIds, string calldata teamName) external returns (uint256) {
         require(nftIds.length == 3, "Must stake exactly three NFTs");
-        Team storage newTeam = teams[teamsCounter.current()];
+        uint256 newTeamId = teamsCounter.current();
+        Team storage newTeam = teams[newTeamId];
         for (uint256 i = 0; i < nftIds.length; i++) {
             require(cosmoShips.ownerOf(nftIds[i]) == msg.sender, "Not the owner of the NFT");
             cosmoShips.transferFrom(msg.sender, address(this), nftIds[i]);
@@ -71,6 +73,7 @@ contract GameLeague is ERC721Holder {
         newTeam.owner = msg.sender;
         newTeam.name = teamName;
         teamsCounter.increment();
+        return newTeamId;
     }
 
     function getTeam(uint256 teamId) public view returns (string memory, uint256[] memory, address) {
@@ -98,5 +101,17 @@ contract GameLeague is ERC721Holder {
     {
         League storage league = leagues[leagueId];
         return (league.id, league.state, league.prizePool, league.enrolledTeams);
+    }
+
+    function enrollToLeague(uint256 teamId) external {
+        require(leagues[currentLeagueId].state == LeagueState.Initiated, "Enrollment is closed");
+        (,, address retrievedOwner) = getTeam(teamId);
+        require(msg.sender == retrievedOwner, "Not team owner");
+        leagues[currentLeagueId].enrolledTeams.push(teamId);
+        leagues[currentLeagueId].teamsMap[teamId] = true;
+    }
+
+    function isTeamEnrolled(uint256 teamId, uint256 leagueId) external view returns (bool) {
+        return leagues[leagueId].teamsMap[teamId];
     }
 }

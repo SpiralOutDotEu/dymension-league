@@ -90,4 +90,42 @@ contract GameLeagueTest is Test {
         gameLeague.initializeLeague{value: _prizePool}();
         vm.stopPrank();
     }
+
+    function tokenMint(address recipient, uint256[] memory tokenIds, uint256[] memory attributes) internal {
+        require(tokenIds.length == attributes.length, "Token IDs and attributes length mismatch");
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(recipient);
+            cosmoShips.mint{value: mintPrice}(tokenIds[i], attributes[i], proof);
+        }
+    }
+
+    function testEnrollToLeague() public {
+        vm.deal(deployer, 2 ether);
+        vm.prank(deployer);
+        gameLeague.initializeLeague{value: 1 ether}();
+
+        // mint some tokens to user so that it can create a team
+        address user = address(0x1);
+        vm.deal(user, 3 * mintPrice + 100 ^ 18);
+        uint256[] memory ids = new uint256[](3);
+        uint256[] memory attrs = new uint256[](3);
+        ids[0] = 1;
+        ids[1] = 2;
+        ids[2] = 3;
+        attrs[0] = 1096;
+        attrs[1] = 9768;
+        attrs[2] = 17000;
+        tokenMint(user, ids, attrs);
+
+        vm.startPrank(user);
+        cosmoShips.setApprovalForAll(address(gameLeague), true);
+        // create a team
+        uint256 teamId = gameLeague.createTeam(ids, "Team-A");
+        // enroll team to league
+        gameLeague.enrollToLeague(teamId);
+        vm.stopPrank();
+
+        // Check if the team was enrolled
+        assertTrue(gameLeague.isTeamEnrolled(teamId, gameLeague.currentLeagueId()));
+    }
 }
