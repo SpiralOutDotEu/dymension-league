@@ -29,6 +29,10 @@ contract GameLeague is ERC721Holder {
         uint256[] enrolledTeams;
         mapping(uint256 => bool) teamsMap;
         mapping(uint256 => Game) games;
+        mapping(uint256 => uint256) totalBetsOnTeam;
+        mapping(address => uint256) userTotalBets;
+        mapping(address => uint256) claimableRewards;
+        uint256 totalBetsInLeague;
     }
 
     struct Game {
@@ -113,5 +117,12 @@ contract GameLeague is ERC721Holder {
 
     function isTeamEnrolled(uint256 teamId, uint256 leagueId) external view returns (bool) {
         return leagues[leagueId].teamsMap[teamId];
+    }
+
+    // Function to end team enrollment and start the betting period
+    function endEnrollmentAndStartBetting(uint256 leagueId) external {
+        League storage league = leagues[leagueId];
+        require(league.state == LeagueState.Initiated , "League is not in enrollment state");
+        league.state = LeagueState.BetsOpen;
     }
 }

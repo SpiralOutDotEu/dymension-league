@@ -128,4 +128,21 @@ contract GameLeagueTest is Test {
         // Check if the team was enrolled
         assertTrue(gameLeague.isTeamEnrolled(teamId, gameLeague.currentLeagueId()));
     }
+
+    function testEndEnrollmentAndStartBetting() public {
+        // Setup: Assume leagueId of 1 and it is currently in the Enrollment state
+        gameLeague.initializeLeague{value: 1 ether}();
+        uint256 leagueId = gameLeague.currentLeagueId();
+
+        // Test transition to Betting state
+        gameLeague.endEnrollmentAndStartBetting(leagueId);
+
+        // Check if the state has transitioned to Betting
+        (, GameLeague.LeagueState state,,) = gameLeague.getLeague(leagueId);
+        assert(state == GameLeague.LeagueState.BetsOpen);
+
+        // Try to call the function when the league is not in Enrollment state
+        vm.expectRevert("League is not in enrollment state");
+        gameLeague.endEnrollmentAndStartBetting(leagueId);
+    }
 }
