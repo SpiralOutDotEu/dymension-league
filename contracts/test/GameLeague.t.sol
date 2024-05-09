@@ -82,7 +82,7 @@ contract GameLeagueTest is Test {
         // Initially, we should be able to start a league
         vm.prank(deployer);
         gameLeague.initializeLeague{value: _prizePool}();
-        (, GameLeague.LeagueState state,,) = gameLeague.getLeague(1);
+        (, GameLeague.LeagueState state,,,) = gameLeague.getLeague(1);
         assertEq(uint256(state), uint256(GameLeague.LeagueState.Initiated));
 
         // Expect revert on trying to initialize another league when one is active
@@ -138,11 +138,71 @@ contract GameLeagueTest is Test {
         gameLeague.endEnrollmentAndStartBetting(leagueId);
 
         // Check if the state has transitioned to Betting
-        (, GameLeague.LeagueState state,,) = gameLeague.getLeague(leagueId);
+        (, GameLeague.LeagueState state,,,) = gameLeague.getLeague(leagueId);
         assert(state == GameLeague.LeagueState.BetsOpen);
 
         // Try to call the function when the league is not in Enrollment state
         vm.expectRevert("League is not in enrollment state");
         gameLeague.endEnrollmentAndStartBetting(leagueId);
+    }
+
+    function testBetPlacing() public {
+        gameLeague.initializeLeague{value: 1 ether}();
+        uint256 leagueId = gameLeague.currentLeagueId();
+
+        address alice = address(0x1);
+        address bob = address(0x2);
+        address carol = address(0x3);
+
+        // mint some tokens to user so that it can create a team
+        vm.deal(carol, 3 * mintPrice + 100 ** 18);
+        uint256[] memory ids = new uint256[](3);
+        uint256[] memory attrs = new uint256[](3);
+        ids[0] = 1;
+        ids[1] = 2;
+        ids[2] = 3;
+        attrs[0] = 1096;
+        attrs[1] = 9768;
+        attrs[2] = 17000;
+        tokenMint(carol, ids, attrs);
+
+        vm.startPrank(carol);
+        cosmoShips.setApprovalForAll(address(gameLeague), true);
+        // create a team
+        uint256 teamId = gameLeague.createTeam(ids, "Team-A");
+        // enroll team to league
+        gameLeague.enrollToLeague(teamId);
+        vm.stopPrank();
+
+        gameLeague.endEnrollmentAndStartBetting(leagueId);
+
+        // Alice places a bet
+        uint256 betAmountAlice = 1 ether;
+        vm.deal(alice, betAmountAlice);
+        vm.startPrank(alice);
+        gameLeague.placeBet(leagueId, teamId, betAmountAlice);
+        (uint256[] memory betTeamIdsAlice, uint256[] memory betAmountsAlice) = gameLeague.getUserBets(leagueId, alice);
+        assertEq(betTeamIdsAlice[0], teamId, "Alice's Team ID should match");
+        assertEq(betAmountsAlice[0], betAmountAlice, "Alice's bet amount should match");
+        vm.stopPrank();
+
+        // Bob places twice a bet
+        uint256 betAmountBob = 2 ether;
+        vm.deal(bob, betAmountBob);
+        vm.startPrank(bob);
+        gameLeague.placeBet(leagueId, teamId, betAmountBob/2);
+        gameLeague.placeBet(leagueId, teamId, betAmountBob/2);
+        (uint256[] memory betTeamIdsBob, uint256[] memory betAmountsBob) = gameLeague.getUserBets(leagueId, bob);
+        assertEq(betTeamIdsBob[0], teamId, "Bob's Team ID should match");
+        assertEq(betAmountsBob[0], betAmountBob, "Bob's bet amount should match");
+        vm.stopPrank();
+
+        // Check total bets in the league
+        (,,,, uint256 totalLeagueBets) = gameLeague.getLeague(leagueId);
+        assertEq(
+            totalLeagueBets,
+            betAmountAlice + betAmountBob,
+            "Total league bets should match the sum of Alice's and Bob's bets"
+        );
     }
 }

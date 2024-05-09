@@ -30,7 +30,8 @@ contract GameLeague is ERC721Holder {
         mapping(uint256 => bool) teamsMap;
         mapping(uint256 => Game) games;
         mapping(uint256 => uint256) totalBetsOnTeam;
-        mapping(address => uint256) userTotalBets;
+        mapping(address => mapping(uint256 => uint256)) userBetsOnTeam;
+        mapping(address => uint256[]) userBetTeams;
         mapping(address => uint256) claimableRewards;
         uint256 totalBetsInLeague;
     }
@@ -101,10 +102,10 @@ contract GameLeague is ERC721Holder {
     function getLeague(uint256 leagueId)
         external
         view
-        returns (uint256 id, LeagueState state, uint256 prizePool, uint256[] memory enrolledTeams)
+        returns (uint256 id, LeagueState state, uint256 prizePool, uint256[] memory enrolledTeams, uint256 totalBetsInLeague)
     {
         League storage league = leagues[leagueId];
-        return (league.id, league.state, league.prizePool, league.enrolledTeams);
+        return (league.id, league.state, league.prizePool, league.enrolledTeams, league.totalBetsInLeague);
     }
 
     function enrollToLeague(uint256 teamId) external {
@@ -122,7 +123,53 @@ contract GameLeague is ERC721Holder {
     // Function to end team enrollment and start the betting period
     function endEnrollmentAndStartBetting(uint256 leagueId) external {
         League storage league = leagues[leagueId];
-        require(league.state == LeagueState.Initiated , "League is not in enrollment state");
+        require(league.state == LeagueState.Initiated, "League is not in enrollment state");
         league.state = LeagueState.BetsOpen;
+    }
+
+    function placeBet(uint256 leagueId, uint256 teamId, uint256 amount) external {
+        League storage league = leagues[leagueId];
+        require(league.state == LeagueState.BetsOpen, "Betting is not active");
+        require(league.teamsMap[teamId], "Team does not exist in this league");
+
+        // If it's the first bet on this team by the user for this league, add to the list
+        if (league.userBetsOnTeam[msg.sender][teamId] == 0) {
+            league.userBetTeams[msg.sender].push(teamId);
+        }
+
+        // Update the bet amount
+        league.userBetsOnTeam[msg.sender][teamId] += amount;
+
+        // Update the total bets for the team and the league
+        league.totalBetsOnTeam[teamId] += amount;
+        league.totalBetsInLeague += amount;
+    }
+
+    // Function to get all bet details for a user in a specific league
+    function getUserBets(uint256 leagueId, address user)
+        public
+        view
+        returns (uint256[] memory teamIds, uint256[] memory betAmounts)
+    {
+        League storage league = leagues[leagueId];
+        uint256[] storage betTeams = league.userBetTeams[user];
+        uint256 numBets = betTeams.length;
+        require(league.userBetTeams[msg.sender].length > 0, "No bets placed");
+
+        teamIds = new uint256[](numBets);
+        betAmounts = new uint256[](numBets);
+
+        for (uint256 i = 0; i < numBets; i++) {
+            uint256 teamId = betTeams[i];
+            if (league.userBetsOnTeam[user][teamId] > 0) {
+                teamIds[i] = teamId;
+                betAmounts[i] = league.userBetsOnTeam[user][teamId];
+            } else {
+                // This else block should theoretically never be hit since teamIds should only be added if a bet is made.
+                revert("Bet data corrupted or uninitialized bet found.");
+            }
+        }
+
+        return (teamIds, betAmounts);
     }
 }
