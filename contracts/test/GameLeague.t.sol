@@ -205,4 +205,23 @@ contract GameLeagueTest is Test {
             "Total league bets should match the sum of Alice's and Bob's bets"
         );
     }
+
+    function testEndBettingAndStartGames() public {
+        gameLeague.initializeLeague{value: 1 ether}();
+        uint256 leagueId = gameLeague.currentLeagueId();
+
+        // Test transition to Betting state
+        gameLeague.endEnrollmentAndStartBetting(leagueId);
+
+        // Test transition to Running state
+        gameLeague.endBettingAndStartGame(leagueId);
+
+        // Check if the state has transitioned to Running
+        (, GameLeague.LeagueState state,,,) = gameLeague.getLeague(leagueId);
+        assert(state == GameLeague.LeagueState.Running);
+
+        // Try to call the function when the league is not in Enrollment state
+        vm.expectRevert("League is not in betting state");
+        gameLeague.endBettingAndStartGame(leagueId);
+    }
 }

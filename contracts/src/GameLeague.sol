@@ -102,7 +102,13 @@ contract GameLeague is ERC721Holder {
     function getLeague(uint256 leagueId)
         external
         view
-        returns (uint256 id, LeagueState state, uint256 prizePool, uint256[] memory enrolledTeams, uint256 totalBetsInLeague)
+        returns (
+            uint256 id,
+            LeagueState state,
+            uint256 prizePool,
+            uint256[] memory enrolledTeams,
+            uint256 totalBetsInLeague
+        )
     {
         League storage league = leagues[leagueId];
         return (league.id, league.state, league.prizePool, league.enrolledTeams, league.totalBetsInLeague);
@@ -171,5 +177,12 @@ contract GameLeague is ERC721Holder {
         }
 
         return (teamIds, betAmounts);
+    }
+
+    // Function to end betting and start the game run period
+    function endBettingAndStartGame(uint256 leagueId) external {
+        League storage league = leagues[leagueId];
+        require(league.state == LeagueState.BetsOpen, "League is not in betting state");
+        league.state = LeagueState.Running;
     }
 }
