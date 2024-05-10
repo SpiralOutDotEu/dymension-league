@@ -21,7 +21,7 @@ contract MockRandomNumberGenerator is IRandomNumberGenerator {
 contract GameLeagueTest is Test {
     GameLeague gameLeague;
     CosmoShips cosmoShips;
-    MockRandomNumberGenerator mockRNG ;
+    MockRandomNumberGenerator mockRNG;
     IAttributeVerifier verifier;
     address deployer;
     bytes32[] proof;
@@ -231,5 +231,66 @@ contract GameLeagueTest is Test {
         // Try to call the function when the league is not in Enrollment state
         vm.expectRevert("League is not in betting state");
         gameLeague.endBettingAndStartGame(leagueId);
+    }
+
+    function testMatchSetupAndOutcome() public {
+        // Initialize league
+        gameLeague.initializeLeague{value: 1 ether}();
+        uint256 leagueId = gameLeague.currentLeagueId();
+        uint256 seed = 1;
+
+        // Setup teams
+        // temp variables
+        uint256[] memory ids = new uint256[](3);
+        uint256[] memory attrs = new uint256[](3);
+        // Team alice
+        address alice = address(0x1);
+        ids[0] = 1;
+        ids[1] = 2;
+        ids[2] = 3;
+        attrs[0] = 1096;
+        attrs[1] = 9768;
+        attrs[2] = 17000;
+        uint256 teamIdAlice = setupTeamAndEnroll(alice, ids, attrs, "Team-Alice");
+        // end Team alice
+
+        // Team bob
+        address bob = address(0x2);
+        ids[0] = 4;
+        ids[1] = 5;
+        ids[2] = 6;
+        attrs[0] = 17442;
+        attrs[1] = 18532;
+        attrs[2] = 16936;
+        uint256 teamIdBob = setupTeamAndEnroll(bob, ids, attrs, "Team-Bob");
+        // end Team bob
+
+        // // Start betting period and then games
+        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.setupMatches(seed);
+
+        // Retrieve and assert the state of the league after setting up matches
+        (, GameLeague.LeagueState state,, uint256[] memory enrolledTeams,) = gameLeague.getLeague(leagueId);
+        assertEq(uint256(state), uint256(GameLeague.LeagueState.BetsOpen));
+        assertTrue(enrolledTeams.length >= 2);
+
+        // TODO: complete the test
+
+    }
+
+    function setupTeamAndEnroll(address user, uint256[] memory ids, uint256[] memory attrs, string memory teamName)
+        public
+        returns (uint256)
+    {
+        vm.deal(user, 3 * mintPrice + 100 ether); // Ensure user has enough ether
+        tokenMint(user, ids, attrs); // Mint tokens for the user
+
+        vm.startPrank(user);
+        cosmoShips.setApprovalForAll(address(gameLeague), true); // Set approval for all tokens
+        uint256 teamId = gameLeague.createTeam(ids, teamName); // Create the team
+        gameLeague.enrollToLeague(teamId); // Enroll the team to the league
+        vm.stopPrank();
+
+        return teamId;
     }
 }
