@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "openzeppelin-contracts/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
 import "./CosmoShips.sol";
+import "./IRandomNumberGenerator.sol";
 
 contract GameLeague is ERC721Holder {
     using Counters for Counters.Counter;
@@ -61,9 +62,12 @@ contract GameLeague is ERC721Holder {
     mapping(address => uint256) public stakes;
 
     CosmoShips public cosmoShips;
+    IRandomNumberGenerator public rng;
 
-    constructor(address _nftAddress) {
+
+    constructor(address _nftAddress, address _rng) {
         cosmoShips = CosmoShips(_nftAddress);
+        rng = IRandomNumberGenerator(_rng);
     }
 
     function createTeam(uint256[] calldata nftIds, string calldata teamName) external returns (uint256) {

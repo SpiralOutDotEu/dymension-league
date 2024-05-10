@@ -12,9 +12,16 @@ contract mockVerifier is IAttributeVerifier {
     }
 }
 
+contract MockRandomNumberGenerator is IRandomNumberGenerator {
+    function getRandomNumber(uint256 _seed) external view override returns (uint256) {
+        return _seed;
+    }
+}
+
 contract GameLeagueTest is Test {
     GameLeague gameLeague;
     CosmoShips cosmoShips;
+    MockRandomNumberGenerator mockRNG ;
     IAttributeVerifier verifier;
     address deployer;
     bytes32[] proof;
@@ -24,7 +31,8 @@ contract GameLeagueTest is Test {
         deployer = address(this);
         verifier = new mockVerifier();
         cosmoShips = new CosmoShips("0x1", mintPrice, address(this), address(verifier));
-        gameLeague = new GameLeague(address(cosmoShips));
+        mockRNG = new MockRandomNumberGenerator();
+        gameLeague = new GameLeague(address(cosmoShips), address(mockRNG));
 
         // mock proof to pass signature requirement
         proof = new bytes32[](1);
@@ -190,8 +198,8 @@ contract GameLeagueTest is Test {
         uint256 betAmountBob = 2 ether;
         vm.deal(bob, betAmountBob);
         vm.startPrank(bob);
-        gameLeague.placeBet(leagueId, teamId, betAmountBob/2);
-        gameLeague.placeBet(leagueId, teamId, betAmountBob/2);
+        gameLeague.placeBet(leagueId, teamId, betAmountBob / 2);
+        gameLeague.placeBet(leagueId, teamId, betAmountBob / 2);
         (uint256[] memory betTeamIdsBob, uint256[] memory betAmountsBob) = gameLeague.getUserBets(leagueId, bob);
         assertEq(betTeamIdsBob[0], teamId, "Bob's Team ID should match");
         assertEq(betAmountsBob[0], betAmountBob, "Bob's bet amount should match");
