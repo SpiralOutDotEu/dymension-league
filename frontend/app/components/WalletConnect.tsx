@@ -1,9 +1,14 @@
 "use client";
-import React from "react";
-import useWallet from "../hooks/useWallet";
+import React, { useEffect } from "react";
+import { useWalletStore } from "../store/useWalletStore"
 
 const WalletConnect: React.FC = () => {
-    const { account, connectWallet } = useWallet();
+    const { account, signer, connectWallet } = useWalletStore();
+
+    useEffect(() => {
+        console.log("Account is (on wallet connect): ", account);
+        console.log("signer is (on wallet connect): ", signer);
+      }, [account, signer]);
 
     const trimmedAddress = account ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}` : '';
 
