@@ -1,7 +1,7 @@
 import React from "react";
-import { getTokenVideoUrl } from "../utils/token";
-import useCosmoShips from "../hooks/useCosmoShips";
-import { useWalletStore } from "../store/useWalletStore";
+import { getTokenVideoUrl } from "../../utils/token";
+import useCosmoShips from "../../hooks/useCosmoShips";
+import { useWalletStore } from "../../store/useWalletStore";
 
 interface TokenDisplayProps {
   tokenId: number;
