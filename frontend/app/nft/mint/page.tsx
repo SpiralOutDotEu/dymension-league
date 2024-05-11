@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import TokenDisplay from "../../components/TokenDisplay";
-import Pagination from "../../components/Pagination";
+import TokenDisplay from "../../components/mint/TokenDisplay";
+import Pagination from "../../components/mint/Pagination";
 
 const TOKENS_PER_PAGE = 12;
 const TOTAL_TOKENS = 1500;
