@@ -95,6 +95,40 @@ contract GameLeague is ERC721Holder {
         return (team.name, team.nftIds, team.owner);
     }
 
+    function getTeamsByOwner(address owner)
+        public
+        view
+        returns (uint256[] memory teamIds, string[] memory teamNames, uint256[][] memory tokenIndexes)
+    {
+        uint256 totalTeams = teamsCounter.current();
+        teamIds = new uint256[](totalTeams);
+        teamNames = new string[](totalTeams);
+        tokenIndexes = new uint256[][](totalTeams);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < totalTeams; i++) {
+            if (teams[i].owner == owner) {
+                teamIds[count] = i;
+                teamNames[count] = teams[i].name;
+                tokenIndexes[count] = teams[i].nftIds;
+                count++;
+            }
+        }
+
+        // Resize the arrays to include only the count of teams owned by the owner
+        uint256[] memory filteredTeamIds = new uint256[](count);
+        string[] memory filteredTeamNames = new string[](count);
+        uint256[][] memory filteredTokenIndexes = new uint256[][](count);
+
+        for (uint256 j = 0; j < count; j++) {
+            filteredTeamIds[j] = teamIds[j];
+            filteredTeamNames[j] = teamNames[j];
+            filteredTokenIndexes[j] = tokenIndexes[j];
+        }
+
+        return (filteredTeamIds, filteredTeamNames, filteredTokenIndexes);
+    }
+
     function initializeLeague() external payable {
         require(
             leagues[currentLeagueId].state == LeagueState.Concluded || currentLeagueId == 0,
