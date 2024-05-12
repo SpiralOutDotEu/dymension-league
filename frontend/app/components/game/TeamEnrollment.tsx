@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useGameLeague } from "../../hooks/useGameLeague";
 import { useWalletStore } from "../../store/useWalletStore";
-import { getTokenVideoUrl } from "@/app/utils/token"; // Adjust this path to where your function is actually located
+import { getTokenVideoUrl } from "@/app/utils/token"; 
 import { ethers } from "ethers";
 
 export const TeamEnrollment: React.FC = () => {
@@ -20,11 +20,11 @@ export const TeamEnrollment: React.FC = () => {
         .then((data) => {
           const { teamIds, teamNames, tokenIndexes } = data;
           setTeams({
-            teamIds: teamIds.map((id) => id.toString()), // Keep as strings
+            teamIds: teamIds.map((id) => id.toString()),
             teamNames,
             tokenIndexes: tokenIndexes.map((indexArray) =>
               indexArray.map((index) => index.toString())
-            ), // Keep as strings
+            ), 
           });
         })
         .catch(console.error);
@@ -33,7 +33,7 @@ export const TeamEnrollment: React.FC = () => {
 
   const handleEnroll = async (teamId: string) => {
     try {
-      await enrollToLeague(parseInt(teamId)); // Convert back to number if needed by the smart contract function
+      await enrollToLeague(parseInt(teamId)); 
       alert(`Team ${teamId} enrolled successfully!`);
     } catch (error) {
       alert(
@@ -51,7 +51,7 @@ export const TeamEnrollment: React.FC = () => {
         {teams.teamIds.map((teamId, index) => (
           <li
             key={teamId}
-            className="mb-6 last:mb-0 bg-gray-700 p-4 rounded shadow-lg" // Styling each team entry distinctly
+            className="mb-6 last:mb-0 bg-gray-700 p-4 rounded shadow-lg" 
           >
             <div className="flex justify-between items-center">
               <span className="flex-grow">
