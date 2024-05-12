@@ -66,5 +66,65 @@ export const useGameLeague = () => {
     return { teamIds, teamNames, tokenIndexes };
   };
 
-  return { createTeam, enrollToLeague, placeBet, getTeam, getTeamsByOwner };
+  const initializeLeague = async (value: number) => {
+    const contract = getContract();
+    return contract.initializeLeague({ value: ethers.utils.parseEther(value.toString()) });
+  };
+
+  const getLeague = async (leagueId: number) => {
+    const contract = getContract();
+    return contract.getLeague(leagueId);
+  };
+
+  const isTeamEnrolled = async (teamId: number, leagueId: number) => {
+    const contract = getContract();
+    return contract.isTeamEnrolled(teamId, leagueId);
+  };
+
+  const endEnrollmentAndStartBetting = async () => {
+    const contract = getContract();
+    return contract.endEnrollmentAndStartBetting();
+  };
+
+  const getUserBets = async (leagueId: number, user: string) => {
+    const contract = getContract();
+    return contract.getUserBets(leagueId, user);
+  };
+
+  const endBettingAndStartGame = async (leagueId: number) => {
+    const contract = getContract();
+    return contract.endBettingAndStartGame(leagueId);
+  };
+
+  const setupMatches = async (seed: number) => {
+    const contract = getContract();
+    return contract.setupMatches(seed);
+  };
+
+  const determineMatchOutcome = async (leagueId: number, gameId: number) => {
+    const contract = getContract();
+    return contract.determineMatchOutcome(leagueId, gameId);
+  };
+
+  const runGameLeague = async () => {
+    const contract = getContract();
+    return contract.runGameLeague();
+  };
+
+  return {
+    createTeam,
+    enrollToLeague,
+    placeBet,
+    getTeam,
+    getTeamsByOwner,
+    initializeLeague,
+    getLeague,
+    isTeamEnrolled,
+    endEnrollmentAndStartBetting,
+    getUserBets,
+    endBettingAndStartGame,
+    setupMatches,
+    determineMatchOutcome,
+    runGameLeague,
+  };
 };

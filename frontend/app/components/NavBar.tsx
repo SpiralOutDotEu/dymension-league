@@ -15,6 +15,9 @@ const NavBar: React.FC = () => {
           <Link href="/team/enroll" className="text-gray-600 hover:text-gray-500 transition-colors duration-200 ease-in-out">
             Enroll Team
           </Link>
+          <Link href="/admin" className="text-gray-600 hover:text-gray-500 transition-colors duration-200 ease-in-out">
+            Governance Simulator
+          </Link>
         </div>
       </div>
     </nav>
