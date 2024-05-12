@@ -110,6 +110,11 @@ export const useGameLeague = () => {
     const contract = getContract();
     return contract.runGameLeague();
   };
+  
+  const getEnrolledTeams = async () => {
+    const contract = getContract();
+    return contract.getEnrolledTeams();
+  };
 
   return {
     createTeam,
@@ -126,5 +131,6 @@ export const useGameLeague = () => {
     setupMatches,
     determineMatchOutcome,
     runGameLeague,
+    getEnrolledTeams,
   };
 };
