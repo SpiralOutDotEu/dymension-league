@@ -143,7 +143,7 @@ contract GameLeagueTest is Test {
         uint256 leagueId = gameLeague.currentLeagueId();
 
         // Test transition to Betting state
-        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.endEnrollmentAndStartBetting();
 
         // Check if the state has transitioned to Betting
         (, GameLeague.LeagueState state,,,) = gameLeague.getLeague(leagueId);
@@ -151,7 +151,7 @@ contract GameLeagueTest is Test {
 
         // Try to call the function when the league is not in Enrollment state
         vm.expectRevert("League is not in enrollment state");
-        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.endEnrollmentAndStartBetting();
     }
 
     function testBetPlacing() public {
@@ -182,7 +182,7 @@ contract GameLeagueTest is Test {
         gameLeague.enrollToLeague(teamId);
         vm.stopPrank();
 
-        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.endEnrollmentAndStartBetting();
 
         // Alice places a bet
         uint256 betAmountAlice = 1 ether;
@@ -219,7 +219,7 @@ contract GameLeagueTest is Test {
         uint256 leagueId = gameLeague.currentLeagueId();
 
         // Test transition to Betting state
-        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.endEnrollmentAndStartBetting();
 
         // Test transition to Running state
         gameLeague.endBettingAndStartGame(leagueId);
@@ -266,7 +266,7 @@ contract GameLeagueTest is Test {
         // end Team bob
 
         // // Start betting period and then games
-        gameLeague.endEnrollmentAndStartBetting(leagueId);
+        gameLeague.endEnrollmentAndStartBetting();
         gameLeague.setupMatches(seed);
 
         // Retrieve and assert the state of the league after setting up matches

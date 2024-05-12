@@ -170,7 +170,8 @@ contract GameLeague is ERC721Holder {
     }
 
     // Function to end team enrollment and start the betting period
-    function endEnrollmentAndStartBetting(uint256 leagueId) external {
+    function endEnrollmentAndStartBetting() external {
+        uint256 leagueId = currentLeagueId;
         League storage league = leagues[leagueId];
         require(league.state == LeagueState.Initiated, "League is not in enrollment state");
         league.state = LeagueState.BetsOpen;
