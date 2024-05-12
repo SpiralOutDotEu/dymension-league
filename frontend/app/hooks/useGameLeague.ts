@@ -5,6 +5,15 @@ import { GAMELEAGUE_ADDRESS } from "../utils/constants";
 
 const contractAddress = GAMELEAGUE_ADDRESS;
 
+interface TeamInfo {
+  teamIds: number[];
+  teamNames: string[];
+  tokenIndexes: number[][];
+}
+
+getTeamsByOwner: (owner: string, provider: ethers.providers.Provider) =>
+  Promise<TeamInfo>;
+
 export const useGameLeague = () => {
   const { signer } = useWalletStore();
 
@@ -37,5 +46,25 @@ export const useGameLeague = () => {
     return contract.getTeam(teamId);
   };
 
-  return { createTeam, enrollToLeague, placeBet, getTeam };
+  const getTeamsByOwner = async (
+    owner: string,
+    provider: ethers.providers.Provider
+  ): Promise<{
+    teamIds: number[];
+    teamNames: string[];
+    tokenIndexes: number[][];
+  }> => {
+    if (!provider) throw new Error("Provider not set");
+    const contract = new ethers.Contract(
+      contractAddress,
+      GameLeagueABI.abi,
+      provider
+    );
+    const [teamIds, teamNames, tokenIndexes] = await contract.getTeamsByOwner(
+      owner
+    );
+    return { teamIds, teamNames, tokenIndexes };
+  };
+
+  return { createTeam, enrollToLeague, placeBet, getTeam, getTeamsByOwner };
 };

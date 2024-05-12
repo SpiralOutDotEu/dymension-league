@@ -22,7 +22,7 @@ const TokenDisplay: React.FC<TokenDisplayProps> = ({ tokenId }) => {
 
   return (
     <div className="p-2 border rounded shadow-sm space-y-2">
-      <h2 className="text-sm font-semibold">Token #{tokenId}</h2>
+      <h2 className="text-sm font-semibold">Spaceship #{tokenId}</h2>
       <video className="w-full" controls autoPlay loop muted>
         <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
