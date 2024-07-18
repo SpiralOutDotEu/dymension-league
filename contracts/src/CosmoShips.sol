@@ -18,57 +18,91 @@ contract CosmoShips is
     bytes32 public constant MAINTENANCE_ROLE = keccak256("MAINTENANCE_ROLE");
     bytes32 public merkleRoot;
     uint256 public mintPrice;
+    uint256 private _tokenId;
     IAttributeVerifier public verifier;
     mapping(uint256 => bool) public tokenMinted;
     mapping(uint256 => uint256) public attributes;
 
     event Minted(address minter, uint256 tokenId);
 
-    constructor(bytes32 _merkleRoot, uint256 _mintPrice, address _defaultAdmin, address _verifier) ERC721("CosmoShips", "CSSS") {
+    constructor(
+        bytes32 _merkleRoot,
+        uint256 _initialTokenId,
+        uint256 _mintPrice,
+        address _defaultAdmin,
+        address _verifier
+    ) ERC721("CosmoShips", "CSSS") {
         merkleRoot = _merkleRoot;
         mintPrice = _mintPrice;
         _grantRole(DEFAULT_ADMIN_ROLE, _defaultAdmin);
         verifier = IAttributeVerifier(_verifier);
+        _tokenId = _initialTokenId;
     }
 
-    function updateMerkleRoot(bytes32 _newRoot) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateMerkleRoot(
+        bytes32 _newRoot
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         merkleRoot = _newRoot;
     }
 
-    function updateMintPrice(uint256 _newPrice) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function updateMintPrice(
+        uint256 _newPrice
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         mintPrice = _newPrice;
     }
 
-    function maintenance(uint256 _tokenId, uint256 _newAttribute) external onlyRole(MAINTENANCE_ROLE) {
-        attributes[_tokenId] = _newAttribute;
+    function maintenance(
+        uint256 tokenId,
+        uint256 _newAttribute
+    ) external onlyRole(MAINTENANCE_ROLE) {
+        attributes[tokenId] = _newAttribute;
     }
 
-    function mint(uint256 _tokenId, uint256 _attributes, bytes32[] calldata _proof) external payable nonReentrant {
+    function mint(
+        uint256 _attributes,
+        bytes32[] calldata _proof
+    ) external payable nonReentrant {
+        uint256 newTokenId = _tokenId + 1;
         require(msg.value == mintPrice, "Incorrect paymen sent");
-        require(!tokenMinted[_tokenId], "Token already minted");
-        require(verifier.verify(merkleRoot, _proof, _tokenId, _attributes), "Invalid proof");
+        require(!tokenMinted[newTokenId], "Token already minted");
+        require(
+            verifier.verify(merkleRoot, _proof, newTokenId, _attributes),
+            "Invalid proof"
+        );
 
-        tokenMinted[_tokenId] = true;
-        attributes[_tokenId] = _attributes;
-        _safeMint(msg.sender, _tokenId);
-        emit Minted(msg.sender, _tokenId);
+        tokenMinted[newTokenId] = true;
+        attributes[newTokenId] = _attributes;
+        _safeMint(msg.sender, newTokenId);
+        emit Minted(msg.sender, newTokenId);
     }
 
     // The following functions are overrides required by Solidity.
-    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
-        return ERC721Enumerable._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Enumerable) {
+        return
+            ERC721Enumerable._beforeTokenTransfer(
+                from,
+                to,
+                firstTokenId,
+                batchSize
+            );
     }
 
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(
+        bytes4 interfaceId
+    )
         public
         view
         override(ERC721, ERC721Enumerable, AccessControl)
         returns (bool)
     {
-        return ERC721.supportsInterface(interfaceId) || ERC721Enumerable.supportsInterface(interfaceId)
-            || ERC721Enumerable.supportsInterface(interfaceId);
+        return
+            ERC721.supportsInterface(interfaceId) ||
+            ERC721Enumerable.supportsInterface(interfaceId) ||
+            ERC721Enumerable.supportsInterface(interfaceId);
     }
 }
