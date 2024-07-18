@@ -5,25 +5,8 @@ import "forge-std/Test.sol";
 import "../src/CosmoShips.sol";
 import "../src/GameLeague.sol";
 import "../src/IAttributeVerifier.sol";
-
-contract mockVerifier is IAttributeVerifier {
-    function verify(
-        bytes32,
-        bytes32[] calldata,
-        uint256,
-        uint256
-    ) public pure returns (bool) {
-        return true;
-    }
-}
-
-contract MockRandomNumberGenerator is IRandomNumberGenerator {
-    function getRandomNumber(
-        uint256 _seed
-    ) external pure override returns (uint256) {
-        return _seed;
-    }
-}
+import "./fixtures/mockVerifier.sol";
+import "./fixtures/mockRandomGenerator.sol";
 
 contract GameLeagueTest is Test {
     GameLeague gameLeague;

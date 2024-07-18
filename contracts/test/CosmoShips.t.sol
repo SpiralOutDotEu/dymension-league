@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "forge-std/Test.sol";
 import "../src/CosmoShips.sol";
 import "../src/AttributeVerifier.sol";
+import "./fixtures/mockVerifier.sol";
 
 contract CosmoShipsTest is Test {
     CosmoShips nft;
@@ -43,13 +44,25 @@ contract CosmoShipsTest is Test {
     }
 
     function testMintingFunctionality() public {
+        IAttributeVerifier nftVerifier = new mockVerifier();
+        CosmoShips testNft = new CosmoShips(
+            "0x1",
+            0,
+            1 ether,
+            address(this),
+            address(nftVerifier)
+        );
         uint256 tokenId = 0;
         uint256 attributes = 1096;
-        bytes32[2] memory t_proof = [
+        bytes32[4] memory t_proof = [
             bytes32(
                 0xedc01e4d375758c57a25a6e5095e5ab59d5c2d87eb305682190981234d81175e
             ),
-            0x1938d33112841f5ee65081f55d342198ab4a089d74cefcd0e7c616d43aad8c6d
+            0x1938d33112841f5ee65081f55d342198ab4a089d74cefcd0e7c616d43aad8c6d,
+            bytes32(
+                0xedc01e4d375758c57a25a6e5095e5ab59d5c2d87eb305682190981234d81175b
+            ),
+            0x1938d33112841f5ee65081f55d342198ab4a089d74cefcd0e7c616d43aad8c6c
         ];
         bytes32[] memory proof = new bytes32[](2);
         proof[0] = t_proof[0];
@@ -57,8 +70,24 @@ contract CosmoShipsTest is Test {
 
         vm.deal(user, 2 ether); // Provide ETH to user
         vm.prank(user);
-        nft.mint{value: 1 ether}(attributes, proof);
+        testNft.mint{value: 1 ether}(attributes, proof);
 
+        assertTrue(
+            nft.tokenMinted(tokenId),
+            "Token should be marked as minted"
+        );
+        assertEq(nft.ownerOf(tokenId), user, "Owner is not correctly assigned");
+        assertEq(
+            nft.attributes(tokenId),
+            attributes,
+            "Attributes not correctly set"
+        );
+        tokenId += 1;
+
+        proof[0] = t_proof[2];
+        proof[1] = t_proof[3];
+        vm.prank(user);
+        testNft.mint{value: 1 ether}(attributes, proof);
         assertTrue(
             nft.tokenMinted(tokenId),
             "Token should be marked as minted"
